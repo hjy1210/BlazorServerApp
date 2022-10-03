@@ -1,0 +1,37 @@
+﻿@page "/rich-editor"
+@using Microsoft.JSInterop
+@inject IJSRuntime JS
+<p>Insert some content in the Ckeditor below then press button "Get Data" to get the result shown under "Result" paragraph.</p>
+<p>
+    If you insert image geo-4.jpg(which is 9KB in size), output is as expected.
+    If you insert image history-4.jpg(41KB), "Attempting to reconnect to the server 1 of 8" error message appeared, failed to getData from CKEditor.
+</p>
+<div>
+    <button @onclick="GetData"> Get Data</button>
+</div>
+<p>RichEditor:</p>
+<div class="container">
+    <div class="row">
+        <div class="col">
+            <textarea id="editor1"  cols="50" rows="1" disabled style="min-width:60%" />
+        </div>
+    </div>
+</div>
+<p>Result:</p>
+<div id=@OutputId class="ck-content">
+    @((MarkupString)HtmlContent)
+</div>
+@code {
+    private string HtmlContent = "Insert small image is Ok, larger is not OK.";
+    private string OutputId = "1234";
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await JS.InvokeVoidAsync("createCKEditor", "editor1");
+        }
+    }
+    private async Task GetData(){
+        HtmlContent = await JS.InvokeAsync<string>("getDataFromEditor", "editor1");
+    }
+}
